@@ -100,6 +100,25 @@ class Excel implements Exporter, Importer
         return $this->filesystem->disk($disk)->put($filePath, fopen($file, 'r+'));
     }
 
+	/**
+	 * {@inheritdoc}
+	 */
+	public function string($export, string $fileName, string $writerType = null)
+	{
+		$this->writer->open($export);
+
+		$sheetExports = [$export];
+		foreach ($sheetExports as $sheetExport) {
+			$this->writer->addNewSheet()->export($sheetExport);
+		}
+
+		$writerType = $this->findTypeByExtension($fileName, $writerType);
+
+		ob_start();
+		$this->writer->write($export, 'php://output', $writerType);
+		return ob_get_clean();
+	}
+
     /**
      * {@inheritdoc}
      */
